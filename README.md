@@ -37,7 +37,7 @@ It supports both **CAMS** and **KFintech** CAS statements in **Summary and Detai
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/CAS_to_Spreadsheet.git
+git clone https://github.com/saprecar/CAS_to_Spreadsheet.git
 cd CAS_to_Spreadsheet
 ```
 
