@@ -19,6 +19,12 @@ It supports both **CAMS** and **KFintech** CAS statements in **Summary and Detai
 * 👨‍💻 Designed for non-technical users
 
 ---
+## ScreenShot
+<img width="1604" height="705" alt="image" src="https://github.com/user-attachments/assets/f58aaab4-614e-4207-b59a-e2711233b09b" />
+<img width="1187" height="601" alt="image" src="https://github.com/user-attachments/assets/561820fa-6b10-4562-9edc-2ec6f7a8561b" />
+<img width="1220" height="511" alt="image" src="https://github.com/user-attachments/assets/ecc2be77-9b5b-4cef-a851-bd91bdfb8775" />
+<img width="1031" height="201" alt="image" src="https://github.com/user-attachments/assets/2dc60298-eda7-4819-99e3-7ea83f7bb498" />
+---
 
 ## 🛠️ Tech Stack
 
@@ -138,4 +144,11 @@ This project is free for personal and educational use.
 Commercial use requires prior permission from the author.
 
 ---
+
+
+
+
+
+
+
 
