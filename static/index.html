@@ -32,10 +32,21 @@
                     </select>
                 </div>
                 <div class="input-group">
+                    <label for="provider">Statement Provider</label>
+                    <select id="provider" class="form-select">
+                        <option value="AUTO" selected>Auto Detect</option>
+                        <option value="CAMS">CAMS</option>
+                        <option value="KFIN">KFintech</option>
+                    </select>
+                </div>
+                <div class="input-group">
                     <label for="password">PDF Password</label>
                     <input type="password" id="password" placeholder="Enter PDF password" required>
                 </div>
-                <button type="submit" class="btn primary-btn" id="parse-btn">Parse Statement</button>
+                <div class="button-group" style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button type="submit" class="btn primary-btn" id="parse-btn" style="flex: 1;">Parse Statement</button>
+                    <button type="button" class="btn secondary-btn" id="reset-btn" style="flex: 1;">Reset</button>
+                </div>
                 <div id="loading" class="hidden">Parsing and extracting data... Please wait.</div>
                 <div id="error-msg" class="hidden error"></div>
             </form>

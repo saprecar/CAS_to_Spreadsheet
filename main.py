@@ -22,13 +22,13 @@ async def root():
     return FileResponse("static/index.html")
 
 @app.post("/api/parse")
-async def api_parse(file: UploadFile = File(...), password: str = Form(...), statement_type: str = Form("summary")):
+async def api_parse(file: UploadFile = File(...), password: str = Form(...), statement_type: str = Form("summary"), provider: str = Form("AUTO")):
     if not file.filename.endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
     
     try:
         contents = await file.read()
-        parsed_data = parse_cas_pdf(contents, password, statement_type)
+        parsed_data = parse_cas_pdf(contents, password, statement_type, provider)
         return JSONResponse(content=parsed_data)
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))

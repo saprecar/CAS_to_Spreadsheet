@@ -51,10 +51,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const password = document.getElementById('password').value;
         const statementType = document.getElementById('statement-type').value;
+        const provider = document.getElementById('provider').value;
         const formData = new FormData();
         formData.append('file', fileInput.files[0]);
         formData.append('password', password);
         formData.append('statement_type', statementType);
+        formData.append('provider', provider);
 
         // UI state
         errorMsg.classList.add('hidden');
@@ -91,6 +93,21 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMsg.textContent = msg;
         errorMsg.classList.remove('hidden');
     }
+
+    // Reset form
+    document.getElementById('reset-btn').addEventListener('click', () => {
+        form.reset();
+        fileInput.value = '';
+        updateFileMsg();
+        
+        document.getElementById('dashboard-section').classList.add('hidden');
+        document.getElementById('upload-section').classList.remove('hidden');
+        
+        globalParsedData = null;
+        errorMsg.classList.add('hidden');
+        loading.classList.add('hidden');
+        document.getElementById('parse-btn').disabled = false;
+    });
 
     // Export button
     document.getElementById('download-excel-btn').addEventListener('click', async () => {
