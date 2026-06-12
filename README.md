@@ -145,6 +145,63 @@ Commercial use requires prior permission from the author.
 
 ---
 
+## ⚠️ Disclaimer
+
+This project is provided for educational and personal use only. By using this software, you acknowledge and agree to the following terms:
+
+1. Local Processing & Data Handling
+
+All data processing is performed locally on the user’s device by default. The software does not intentionally transmit, upload, or store any user data externally unless explicitly initiated by the user (for example, through enabling internet access, external APIs, or third-party integrations).
+
+2. Internet Access & External Dependencies
+
+If the user enables internet access, uses external libraries, or connects third-party services, any resulting data exposure, transmission, or security implications are entirely the responsibility of the user.
+
+The developer shall not be held responsible for any data leaks, unauthorized access, or external communications caused by user actions or system configuration.
+
+3. No Advice, Recommendations, or Analysis
+
+This software does not provide any financial, investment, legal, tax, medical, or other professional advice.
+
+It also does not provide recommendations, tips, opinions, or analytical insights of any kind, including but not limited to:
+
+Investment or financial planning suggestions
+Portfolio or asset recommendations
+Risk analysis or performance predictions
+Interpretation or advisory conclusions based on extracted data
+
+All outputs are purely mechanical data processing results and should not be interpreted as advice or guidance.
+
+4. User Responsibility
+
+Users are solely responsible for:
+
+Verifying the correctness, completeness, and validity of all input data
+Reviewing and validating all extracted or generated outputs
+Ensuring lawful and appropriate use of the software
+Maintaining security of their system and files
+5. Accuracy of Output
+
+While the software aims to process data as provided, it may produce:
+
+Incomplete or partial extraction
+Formatting inconsistencies
+Parsing or interpretation errors
+
+No guarantee is provided regarding accuracy, correctness, or suitability for any official, financial, or legal purpose.
+
+6. No Liability
+
+Under no circumstances shall the developer be liable for any damages or losses arising from the use or misuse of this software, including but not limited to:
+
+Data loss or corruption
+Financial or informational losses
+System issues or security vulnerabilities
+Misinterpretation of outputs
+7. Use at Your Own Risk
+
+This software is provided “as is” without warranties of any kind, either express or implied. Use is entirely at your own risk.****
+
 
 
 
