@@ -186,6 +186,12 @@ Commercial use requires prior permission from the author.
   * Legal or regulatory submissions without verification
   * Automated decision-making in critical systems
 * It is strictly a data processing and extraction utility, not an analytical or advisory tool
+## ™️ Intellectual Property
+* All product names, logos, trademarks, and other intellectual property referenced in this project are the property of their respective owners
+* Any third-party names or brands are used for identification and reference purposes only
+* No ownership, endorsement, or affiliation is implied or claimed by the developer
+* This project does not intend to infringe on any copyright, trademark, or intellectual property rights
+* Email for Removal of tool
 
 
 
