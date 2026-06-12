@@ -146,61 +146,46 @@ Commercial use requires prior permission from the author.
 ---
 
 ## ⚠️ Disclaimer
-
-This project is provided for educational and personal use only. By using this software, you acknowledge and agree to the following terms:
-
-1. Local Processing & Data Handling
-
-All data processing is performed locally on the user’s device by default. The software does not intentionally transmit, upload, or store any user data externally unless explicitly initiated by the user (for example, through enabling internet access, external APIs, or third-party integrations).
-
-2. Internet Access & External Dependencies
-
-If the user enables internet access, uses external libraries, or connects third-party services, any resulting data exposure, transmission, or security implications are entirely the responsibility of the user.
-
-The developer shall not be held responsible for any data leaks, unauthorized access, or external communications caused by user actions or system configuration.
-
-3. No Advice, Recommendations, or Analysis
-
-This software does not provide any financial, investment, legal, tax, medical, or other professional advice.
-
-It also does not provide recommendations, tips, opinions, or analytical insights of any kind, including but not limited to:
-
-Investment or financial planning suggestions
-Portfolio or asset recommendations
-Risk analysis or performance predictions
-Interpretation or advisory conclusions based on extracted data
-
-All outputs are purely mechanical data processing results and should not be interpreted as advice or guidance.
-
-4. User Responsibility
-
-Users are solely responsible for:
-
-Verifying the correctness, completeness, and validity of all input data
-Reviewing and validating all extracted or generated outputs
-Ensuring lawful and appropriate use of the software
-Maintaining security of their system and files
-5. Accuracy of Output
-
-While the software aims to process data as provided, it may produce:
-
-Incomplete or partial extraction
-Formatting inconsistencies
-Parsing or interpretation errors
-
-No guarantee is provided regarding accuracy, correctness, or suitability for any official, financial, or legal purpose.
-
-6. No Liability
-
-Under no circumstances shall the developer be liable for any damages or losses arising from the use or misuse of this software, including but not limited to:
-
-Data loss or corruption
-Financial or informational losses
-System issues or security vulnerabilities
-Misinterpretation of outputs
-7. Use at Your Own Risk
-
-This software is provided “as is” without warranties of any kind, either express or implied. Use is entirely at your own risk.****
+* This software is provided for educational and personal use only
+* It is not intended for production, financial decision-making, or official reporting use
+* It does not provide any financial, legal, tax, medical, or professional advice
+* It does not provide tips, recommendations, suggestions, opinions, interpretations, or analysis of any kind
+* All outputs are purely mechanical results of user-provided data processing and extraction
+* The developer does not endorse or guarantee any decision made based on the output
+## 🔐 Data Privacy & Security
+* All data processing is performed locally on the user’s system by default
+* The software does not collect, store, or transmit any user data externally
+* Internet access is used only if explicitly enabled by the user
+* If the user enables external connectivity (APIs, libraries, or scripts), any resulting data exposure is solely the user’s responsibility
+* The developer is not responsible for data leakage, unauthorized access, or security vulnerabilities caused by user actions or system configuration
+## 📊 Accuracy & Output Limitations
+* The software may produce incomplete, partial, or incorrect extraction results
+* Formatting issues, parsing errors, or missing fields may occur depending on input file structure
+* No guarantee is provided regarding:
+  * Accuracy of extracted data
+  * Completeness of results
+  * Compatibility with all file formats or versions
+  * Suitability for legal, financial, or official use
+  * Users must independently verify all outputs before relying on them
+## 👤 User Responsibility
+* Users are solely responsible for:
+* Validity and safety of input files and data
+* Reviewing and verifying all outputs
+* Ensuring lawful use of the software
+* Preventing misuse, modification, or malicious execution
+* Any consequences arising from misuse are entirely the user’s responsibility
+* Users are expected to have basic understanding of how to safely run Python-based applications
+## ⚙️ System Behavior
+* The software runs locally on the user’s machine
+* It may depend on external Python libraries installed via pip
+* It is designed for offline-first usage after setup
+* Performance and results may vary depending on system configuration and input data quality
+## 🚫 Limitations of Use
+* This software must not be used for:
+  * Financial advisory or investment decisions
+  * Legal or regulatory submissions without verification
+  * Automated decision-making in critical systems
+* It is strictly a data processing and extraction utility, not an analytical or advisory tool
 
 
 
