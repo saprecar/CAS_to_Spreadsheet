@@ -4,7 +4,7 @@ import os
 
 def run_verification():
     pdf_path = r"D:\VS code\Cas Parsar\Testing file\test file 2.pdf"
-    password = "Incometax@123"
+    password = "YOUR_PASSWORD_HERE"
     
     if not os.path.exists(pdf_path):
         print(f"Error: PDF file not found at {pdf_path}")
