@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAS Statement Parser Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>CAS Portfolio Dashboard</h1>
+            <p>Upload your password-protected Consolidated Account Statement to extract and visualize your holdings.</p>
+        </header>
+
+        <!-- Upload Section -->
+        <div id="upload-section" class="card">
+            <h2>Upload Statement</h2>
+            <form id="upload-form">
+                <div class="file-drop-area" id="file-drop-area">
+                    <span class="file-msg">Drag and drop your PDF here or click to choose file</span>
+                    <input class="file-input" type="file" id="pdf-file" accept=".pdf" required>
+                </div>
+                <div class="input-group">
+                    <label for="statement-type">Statement Type</label>
+                    <select id="statement-type" class="form-select">
+                        <option value="summary" selected>Summary (Holdings only)</option>
+                        <option value="detailed">Detailed (Includes transactions)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="password">PDF Password</label>
+                    <input type="password" id="password" placeholder="Enter PDF password" required>
+                </div>
+                <button type="submit" class="btn primary-btn" id="parse-btn">Parse Statement</button>
+                <div id="loading" class="hidden">Parsing and extracting data... Please wait.</div>
+                <div id="error-msg" class="hidden error"></div>
+            </form>
+        </div>
+
+        <!-- Dashboard Section (Hidden initially) -->
+        <div id="dashboard-section" class="hidden">
+            <!-- Download Button -->
+            <div class="actions-header">
+                <button id="download-excel-btn" class="btn secondary-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Download Excel Report
+                </button>
+            </div>
+
+            <!-- Profile and Date -->
+            <div class="profile-bar card">
+                <div class="profile-info">
+                    <strong>Investor:</strong> <span id="val-name"></span>
+                </div>
+                <div class="profile-info">
+                    <strong>Email:</strong> <span id="val-email"></span>
+                </div>
+                <div class="profile-info">
+                    <strong>Statement Date:</strong> <span id="val-date"></span>
+                </div>
+            </div>
+
+            <!-- Metrics -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>Portfolio Value</h3>
+                    <div class="metric-value" id="val-market">₹0.00</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Total Invested</h3>
+                    <div class="metric-value" id="val-cost">₹0.00</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Absolute Returns</h3>
+                    <div class="metric-value" id="val-gain">₹0.00</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Overall Gain %</h3>
+                    <div class="metric-value" id="val-gain-pct">0.00%</div>
+                </div>
+            </div>
+
+            <!-- Chart and Details Layout -->
+            <div class="layout-grid">
+                <div class="card chart-container">
+                    <h3>Asset Allocation</h3>
+                    <div class="canvas-wrapper">
+                        <canvas id="allocationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Holdings Table -->
+            <div class="card table-container">
+                <div class="table-header">
+                    <h3>Holdings Detail</h3>
+                    <input type="text" id="search-input" placeholder="Search schemes..." class="search-box">
+                </div>
+                <div class="table-responsive">
+                    <table id="holdings-table">
+                        <thead>
+                            <tr>
+                                <th>Scheme Name</th>
+                                <th>Registrar</th>
+                                <th class="num">Units</th>
+                                <th class="num">NAV</th>
+                                <th class="num">Cost Value</th>
+                                <th class="num">Market Value</th>
+                                <th class="num">Gain/Loss</th>
+                            </tr>
+                        </thead>
+                        <tbody id="holdings-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
