@@ -50,7 +50,7 @@ def generate_excel(parsed_data):
     ws_summary.append(["Gain %", gain_percent])
     
     for row in range(r+1, r+4):
-        ws_summary.cell(row=row, column=2).number_format = '₹#,##0.00'
+        ws_summary.cell(row=row, column=2).number_format = '#,##0.00'
     ws_summary.cell(row=r+4, column=2).number_format = '0.00%'
     
     ws_summary.column_dimensions['A'].width = 20
@@ -85,7 +85,7 @@ def generate_excel(parsed_data):
                     elif c_idx in [9]: # NAV
                         cell.number_format = '#,##0.0000'
                     elif c_idx in [10, 11, 12]: # Cost, Market, Gain
-                        cell.number_format = '₹#,##0.00'
+                        cell.number_format = '#,##0.00'
                     elif c_idx == 13: # Gain %
                         if cell.value is not None:
                             cell.value = cell.value / 100
@@ -105,9 +105,9 @@ def generate_excel(parsed_data):
             ws_holdings.cell(row=max_r+1, column=11, value=f"=SUM(K2:K{max_r})").font = bold_font
             ws_holdings.cell(row=max_r+1, column=12, value=f"=SUM(L2:L{max_r})").font = bold_font
             
-            ws_holdings.cell(row=max_r+1, column=10).number_format = '₹#,##0.00'
-            ws_holdings.cell(row=max_r+1, column=11).number_format = '₹#,##0.00'
-            ws_holdings.cell(row=max_r+1, column=12).number_format = '₹#,##0.00'
+            ws_holdings.cell(row=max_r+1, column=10).number_format = '#,##0.00'
+            ws_holdings.cell(row=max_r+1, column=11).number_format = '#,##0.00'
+            ws_holdings.cell(row=max_r+1, column=12).number_format = '#,##0.00'
             
             thick_border = Border(top=Side(style='thin'), bottom=Side(style='double'))
             for c in range(1, 14):
@@ -158,7 +158,7 @@ def generate_excel(parsed_data):
                 else:
                     if c_idx == 6: # Amount
                         if isinstance(value, (int, float)):
-                            cell.number_format = '₹#,##0.00'
+                            cell.number_format = '#,##0.00'
                             if value < 0:
                                 cell.font = Font(color="FF0000")
                     elif c_idx == 7: # Price

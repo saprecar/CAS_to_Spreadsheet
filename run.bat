@@ -32,7 +32,9 @@ if errorlevel 1 (
 
 echo.
 echo Starting application...
+echo Open your browser at: http://127.0.0.1:8000
 echo.
+
 
 python main.py
 

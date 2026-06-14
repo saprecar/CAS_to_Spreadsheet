@@ -2,6 +2,19 @@ import io
 import re
 import pypdf
 
+def _safe_float(s):
+    """Convert string to float, returning None for non-numeric tokens like '-'."""
+    if s is None:
+        return None
+    cleaned = s.strip().replace('(', '-').replace(')', '').replace(',', '')
+    # A valid number must contain at least one digit
+    if not any(c.isdigit() for c in cleaned):
+        return None
+    try:
+        return float(cleaned)
+    except ValueError:
+        return None
+
 def find_best_split(block, amount):
     """
     Intelligently splits a concatenated numeric string (e.g. '81.24946.154') 
@@ -80,6 +93,7 @@ def is_candidate_name(line):
 def extract_metadata(text_lines):
     metadata = {
         "investor_name": "Unknown",
+        "pan": "Unknown",
         "email": "Unknown",
         "mobile": "Unknown",
         "address": "Unknown",
@@ -113,12 +127,11 @@ def extract_metadata(text_lines):
                             collecting_address = True
                             
                 if metadata["investor_name"] == "Unknown":
-                    for offset in range(1, 12):
-                        if i - offset >= 0:
-                            prev_line = text_lines[i - offset].strip()
-                            if is_candidate_name(prev_line):
-                                metadata["investor_name"] = prev_line
-                                break
+                    for name_idx in range(max(0, i - 10), i):
+                        cand = text_lines[name_idx].strip()
+                        if is_candidate_name(cand):
+                            metadata["investor_name"] = cand
+                            break
         
         elif "mobile" in line_lower and ":" in line_clean:
             parts = re.split(r'mobile\s*:\s*', line_clean, flags=re.IGNORECASE)
@@ -145,6 +158,25 @@ def extract_metadata(text_lines):
                 
     if metadata["address"] == "Unknown" and address_lines:
         metadata["address"] = ", ".join(address_lines)
+
+    # Extract PAN — format: 5 uppercase letters, 4 digits, 1 uppercase letter
+    # KFin sometimes runs PAN directly into next word: "PAN: ABCDE1234FFolio"
+    if metadata["pan"] == "Unknown":
+        pan_value_re = re.compile(r'PAN\s*:?\s*([A-Z]{5}[0-9]{4}[A-Z])', re.IGNORECASE)
+        for line in text_lines[:500]:
+            pm = pan_value_re.search(line)
+            if pm:
+                metadata["pan"] = pm.group(1).upper()
+                break
+        # Fallback: bare PAN anywhere (word boundary before, not needed after)
+        if metadata["pan"] == "Unknown":
+            bare_pan_re = re.compile(r'\b([A-Z]{5}[0-9]{4}[A-Z])')
+            for line in text_lines[:500]:
+                bm = bare_pan_re.search(line)
+                if bm:
+                    metadata["pan"] = bm.group(1).upper()
+                    break
+
         
     return metadata
 
@@ -276,7 +308,8 @@ def parse_kfin_summary(text_lines, metadata):
     return {"metadata": metadata, "holdings": holdings}
 
 def parse_detailed_cas(text_lines, metadata):
-    date_pattern = re.compile(r'^(\d{2}-[A-Za-z]{3}-\d{4})\s+(.*)')
+    date_pattern = re.compile(r'^(\d{2}-[A-Za-z]{3}-\d{4})(?:(?:\d{2}-[A-Za-z]{3}-\d{4})+)?\s*(.*)')
+    # Amount must start with '(' or digit; units/price/balance must contain digits
     amount_pattern = re.compile(r'^(\([\d,]+\.\d{2}\)|-?[\d,]+\.\d{2})\s*(.*)')
     price_units_block_pattern = re.compile(r'^([\d,\.\(\)]+)\s*(.*)')
     balance_pattern = re.compile(r'\s+([\d,]+\.\d{3})\s*$')
@@ -361,7 +394,7 @@ def parse_detailed_cas(text_lines, metadata):
                 if mv_match:
                     current_holding["market_value"] = float(mv_match.group(1).replace(',', ''))
                     
-            elif "Closing Unit Balance:" in line_clean and "Total Cost Value:" in line_clean:
+            if "Closing Unit Balance:" in line_clean and "Total Cost Value:" in line_clean:
                 cub_match = re.search(r'Closing Unit Balance:\s*([\d,]+\.\d+)', line_clean)
                 tcv_match = re.search(r'Total Cost Value:\s*([\d,]+\.\d+)', line_clean)
                 
@@ -492,13 +525,14 @@ def parse_kfin_detailed(text_lines, metadata):
     current_tx = None
     
     mf_pattern = re.compile(r'^([A-Z\s]+Mutual Fund|[A-Z\s]+MF|[A-Z\s]+Mutual\s+Fund.*)$', re.IGNORECASE)
-    date_pattern = re.compile(r'^(\d{2}-[A-Za-z]{3}-\d{4})\s+(.*)')
+    date_pattern = re.compile(r'^(\d{2}-[A-Za-z]{3}-\d{4})(?:(?:\d{2}-[A-Za-z]{3}-\d{4})+)?\s*(.*)')
     
+    # Require at least one digit in each numeric group to avoid matching bare '-'
     four_nums_pattern = re.compile(
-        r'\s+(\([\d,.-]+\)|-?[\d,.-]+)\s+(\([\d,.-]+\)|-?[\d,.-]+)\s+([\d,.-]+)\s+([\d,.-]+)$'
+        r'(?:^|\s+)(\([\d][\d,.-]*\)|-?[\d][\d,.-]*)\s+(\([\d][\d,.-]*\)|-?[\d][\d,.-]*)\s+([\d][\d,.-]*)\s+([\d][\d,.-]*)$'
     )
     one_num_pattern = re.compile(
-        r'\s+(\([\d,.-]+\)|-?[\d,.-]+)$'
+        r'(?:^|\s+)(\([\d][\d,.-]*\)|-?[\d][\d,.-]*)$'
     )
 
     i = 0
@@ -519,8 +553,21 @@ def parse_kfin_detailed(text_lines, metadata):
                 current_tx = None
                 
             header_lines = []
+            
+            # Find Folio No by searching upwards
+            folio = "Unknown"
+            up = i
+            while up >= max(0, i - 10):
+                if "Folio No" in text_lines[up]:
+                    folio_match = re.search(r'Folio No\s*:\s*([\d\s\/-]+)', text_lines[up])
+                    if folio_match:
+                        folio = folio_match.group(1).strip()
+                    break
+                up -= 1
+                
+            # Collect header lines downwards until Opening Unit
             j = i
-            while j < len(text_lines) and "Folio No" not in text_lines[j]:
+            while j < len(text_lines) and "Opening Unit" not in text_lines[j] and "Opening Balance" not in text_lines[j]:
                 header_lines.append(text_lines[j].strip())
                 j += 1
             if j < len(text_lines):
@@ -539,9 +586,6 @@ def parse_kfin_detailed(text_lines, metadata):
                 elif "KFIN" in header_text:
                     registrar = "KFINTECH"
                     
-            folio_match = re.search(r'Folio No\s*:\s*([\d\s\/-]+)', header_text)
-            folio = folio_match.group(1).strip() if folio_match else "Unknown"
-            
             first_line = header_lines[0]
             code_name_match = re.match(r'^\s*([A-Za-z0-9]+)\s*-\s*(.*?)\s*-\s*ISIN:', first_line)
             if code_name_match:
@@ -574,20 +618,21 @@ def parse_kfin_detailed(text_lines, metadata):
                 current_holding["transactions"].append(current_tx)
                 current_tx = None
                 
-            cub_match = re.search(r'Closing Unit Balance\s*:\s*([\d,]+\.\d+)', line_clean)
             tcv_match = re.search(r'Total Cost Value\s*:\s*(?:INR\s*)?([\d,]+\.\d+)', line_clean)
             nav_date_match = re.search(r'NAV on\s*([0-9a-zA-Z\-]+)', line_clean)
             nav_match = re.search(r'NAV on\s*[0-9a-zA-Z\-]+\s*:\s*(?:INR\s*)?([\d,]+\.\d+)', line_clean)
-            mv_match = re.search(r'Market Value on.*?(?:INR\s*)?([\d,]+\.\d+)', line_clean)
-            
+            cub_match = re.search(r'Closing Unit Balance\s*:\s*(-?[\d,.]+)(?:\s|$|\d{2}-[A-Za-z]{3})', line_clean)
             if cub_match:
-                current_holding["closing_balance"] = float(cub_match.group(1).replace(',', ''))
+                val_str = cub_match.group(1).rstrip('.')
+                current_holding["closing_balance"] = _safe_float(val_str)
             if tcv_match:
                 current_holding["cost_value"] = float(tcv_match.group(1).replace(',', ''))
             if nav_date_match:
                 current_holding["nav_date"] = nav_date_match.group(1)
             if nav_match:
                 current_holding["nav"] = float(nav_match.group(1).replace(',', ''))
+            mv_match = re.search(r'Market Value on.*?(?:INR\s*)?([\d,]+\.\d+)', line_clean)
+            
             if mv_match:
                 current_holding["market_value"] = float(mv_match.group(1).replace(',', ''))
                 
@@ -636,10 +681,10 @@ def parse_kfin_detailed(text_lines, metadata):
                     amount_str, units_str, price_str, balance_str = four_nums_match.groups()
                     desc = rest[:four_nums_match.start()].strip()
                     
-                    amount = float(amount_str.replace('(', '-').replace(')', '').replace(',', ''))
-                    units = float(units_str.replace('(', '-').replace(')', '').replace(',', ''))
-                    price = float(price_str.replace(',', ''))
-                    balance = float(balance_str.replace(',', ''))
+                    amount  = _safe_float(amount_str)
+                    units   = _safe_float(units_str)
+                    price   = _safe_float(price_str)
+                    balance = _safe_float(balance_str)
                     
                     current_tx = {
                         "date": date_str,
@@ -654,7 +699,7 @@ def parse_kfin_detailed(text_lines, metadata):
                     if one_num_match:
                         amount_str = one_num_match.group(1)
                         desc = rest[:one_num_match.start()].strip()
-                        amount = float(amount_str.replace('(', '-').replace(')', '').replace(',', ''))
+                        amount = _safe_float(amount_str)
                         
                         current_tx = {
                             "date": date_str,
@@ -665,49 +710,99 @@ def parse_kfin_detailed(text_lines, metadata):
                             "balance": None
                         }
                     else:
+                        # Non-financial annotation entry (e.g. nominee change, email update)
+                        # Treat trailing '-' as no amount
+                        desc = rest.strip()
+                        if desc.endswith(' -'):
+                            desc = desc[:-2].strip()
                         current_tx = {
                             "date": date_str,
                             "amount": None,
                             "price": None,
                             "units": None,
-                            "desc": rest.strip(),
+                            "desc": desc,
                             "balance": None
                         }
             else:
                 if current_tx is not None:
+                    # Check if numbers were wrapped to the next line
+                    if current_tx.get("amount") is None:
+                        four_match = four_nums_pattern.search(line_clean)
+                        if four_match:
+                            a, u, p, b = four_match.groups()
+                            current_tx["amount"] = _safe_float(a)
+                            current_tx["units"] = _safe_float(u)
+                            current_tx["price"] = _safe_float(p)
+                            current_tx["balance"] = _safe_float(b)
+                            rem_desc = line_clean[:four_match.start()].strip()
+                            if rem_desc:
+                                current_tx["desc"] += " " + rem_desc
+                            i += 1
+                            continue
+                            
+                        one_match = one_num_pattern.search(line_clean)
+                        if one_match:
+                            b = one_match.group(1)
+                            current_tx["balance"] = _safe_float(b)
+                            rem_desc = line_clean[:one_match.start()].strip()
+                            if rem_desc:
+                                current_tx["desc"] += " " + rem_desc
+                            i += 1
+                            continue
+                    
                     current_tx["desc"] += " " + line_clean
                     
         i += 1
         
+    if current_tx and current_holding:
+        current_holding["transactions"].append(current_tx)
+
     return {"metadata": metadata, "holdings": holdings}
 
-def parse_cas_pdf(file_bytes, password, statement_type="summary", provider="AUTO"):
-    reader = pypdf.PdfReader(io.BytesIO(file_bytes))
-    if reader.is_encrypted:
-        success = reader.decrypt(password)
-        if not success:
-            raise ValueError("Incorrect password or failed to decrypt.")
-            
-    text_lines = []
-    for page in reader.pages:
-        page_text = page.extract_text()
-        if page_text:
-            text_lines.extend(page_text.split('\n'))
+def _extract_text_lines(file_bytes, password):
+    """
+    Extract text from a (possibly encrypted) PDF using pypdf layout mode.
+    This preserves the visual layout of the PDF and prevents page-level 
+    reflows that cause transactions to appear before their headers.
+    """
+    raw_lines = []
+    try:
+        reader = pypdf.PdfReader(io.BytesIO(file_bytes))
+        if reader.is_encrypted:
+            if not reader.decrypt(password):
+                raise ValueError("Incorrect password or failed to decrypt.")
+                
+        for page in reader.pages:
+            t = page.extract_text(extraction_mode="layout")
+            if t:
+                raw_lines.extend(t.split('\n'))
+    except Exception as e:
+        raise ValueError(f"Failed to read PDF: {str(e)}")
+    return raw_lines
 
-    metadata = extract_metadata(text_lines)
-    
+
+def parse_cas_pdf(file_bytes, password, statement_type="summary", provider="AUTO"):
+    text_lines = _extract_text_lines(file_bytes, password)
+
+    base_metadata = {
+        "statement_period": "",
+        "email": "",
+        "statement_type": statement_type
+    }
+    extracted_meta = extract_metadata(text_lines)
+    base_metadata.update(extracted_meta)
+    metadata = base_metadata
+
     if provider == "AUTO":
-        detected_provider = detect_provider(text_lines)
-    else:
-        detected_provider = provider
-    
-    if detected_provider == "KFIN":
-        if statement_type == "detailed":
-            return parse_kfin_detailed(text_lines, metadata)
-        else:
-            return parse_kfin_summary(text_lines, metadata)
-    else:
-        if statement_type == "detailed":
+        provider = detect_provider(text_lines)
+
+    if statement_type == "detailed":
+        if provider == "CAMS":
             return parse_detailed_cas(text_lines, metadata)
         else:
+            return parse_kfin_detailed(text_lines, metadata)
+    else:
+        if provider == "CAMS":
             return parse_summary_cas(text_lines, metadata)
+        else:
+            return parse_kfin_summary(text_lines, metadata)

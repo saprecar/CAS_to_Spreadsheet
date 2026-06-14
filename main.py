@@ -1,13 +1,14 @@
 import uvicorn
+import threading
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import traceback
-import json
 
 from parser import parse_cas_pdf
 from exporter import generate_excel
+from browser_launcher import open_browser_picker
 
 app = FastAPI(title="CAS PDF Parser")
 
@@ -22,13 +23,21 @@ async def root():
     return FileResponse("static/index.html")
 
 @app.post("/api/parse")
-async def api_parse(file: UploadFile = File(...), password: str = Form(...), statement_type: str = Form("summary"), provider: str = Form("AUTO")):
+async def api_parse(
+    file: UploadFile = File(...),
+    password: str = Form(...),
+    statement_type: str = Form("summary"),
+    provider: str = Form("AUTO")
+):
     if not file.filename.endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
     
     try:
         contents = await file.read()
         parsed_data = parse_cas_pdf(contents, password, statement_type, provider)
+        # Attach statement context for filename generation on the frontend
+        parsed_data["_statement_type"] = statement_type
+        parsed_data["_provider"] = provider
         return JSONResponse(content=parsed_data)
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
@@ -43,14 +52,20 @@ class ExportRequest(BaseModel):
 async def api_export(request: ExportRequest):
     try:
         excel_stream = generate_excel(request.parsed_data)
-        
+
         headers = {
-            'Content-Disposition': 'attachment; filename="CAS_Analysis_Report.xlsx"'
+            'Content-Disposition': 'attachment; filename="CAS_Report.xlsx"'
         }
-        return StreamingResponse(excel_stream, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers=headers)
+        return StreamingResponse(
+            excel_stream,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers=headers
+        )
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="An error occurred while generating the Excel file.")
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    # Show browser picker dialog in a background thread after server is ready
+    threading.Thread(target=open_browser_picker, daemon=True).start()
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=False)
