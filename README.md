@@ -34,6 +34,7 @@ It supports both **CAMS** and **KFintech** CAS statements in **Summary and Detai
 * Pandas
 * PyPDF
 * OpenPyXL
+* packaging
 * HTML UI (local web interface)
 
 ---
@@ -67,6 +68,7 @@ pip install python-multipart>=0.0.9
 pip install pypdf>=4.0.0
 pip install pandas>=2.2.0
 pip install openpyxl>=3.1.2
+pip install packaging>=24.0
 ```
 
 OR simply run:
@@ -81,19 +83,29 @@ install_requirements.bat
 
 ### Option 1 (Recommended)
 
-Run the batch file:
+Run the launcher script for your operating system:
 
-```bash
-run.bat
-```
+| Operating System | Script |
+|------------------|--------|
+| Windows | `run.bat` |
+| Linux | `run.sh` |
+| macOS | `run.command` |
+
+---
 
 ### Option 2 (Manual)
+
+Run the application directly with Python:
 
 ```bash
 python main.py
 ```
 
----
+> **Note:** On some systems, you may need to use:
+>
+> ```bash
+> python3 main.py
+> ```
 
 ## 🌐 Open Application
 
